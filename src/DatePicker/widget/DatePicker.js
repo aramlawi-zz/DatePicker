@@ -63,6 +63,7 @@ define([
         monthNotation: null, // long, short
         orientation: null, // horizontal or vertical
         labelwidth: null, // int
+        emptyAttributeOnError: false,   // bool
 
         //Object & Nodes
         _contextObj: null,
@@ -110,7 +111,7 @@ define([
                     guid: this._contextObj.getGuid(),
                     attr: this.attributeName,
                     callback: dojoLang.hitch(this, function () {
-                        this._loadDate();
+                        this._loadDate2();
                     })
                 });
                 this._handles.push(attrHandle);
@@ -138,7 +139,31 @@ define([
                         dojoAttr.set(node, "value", dateFromDB.getFullYear() || "");
                     }
                 });
+            });
+        },
+        // check for changes to data, if we have values in the fields keep them.
+        _loadDate2: function () {
+            var self = this;
+            this._contextObj.fetch(this.attributeName, function (value) {
+                var dateFromDB,
+                    classNameSearch = "." +  self.className;
 
+                dateFromDB = new Date(value);
+
+                // set dates, if not set return empty value instead of NaN
+                dojoQuery(classNameSearch).each(function (index, node) {
+                    var id = dojoAttr.get(node, "id"),
+                        value = dojoAttr.get(node, "value");
+                    if (id === "day" && value === null) {
+                        dojoAttr.set(node, "value", dateFromDB.getDate() || "");
+                    }
+                    if (id === "month" && value === null) {
+                        dojoAttr.set(node, "value", dateFromDB.getMonth() + 1 || "");
+                    }
+                    if (id === "year" && value === null) {
+                        dojoAttr.set(node, "value", dateFromDB.getFullYear() || "");
+                    }
+                });
             });
         },
         // initialise all values setup in modeler, also create additional arrays used by widget.
@@ -168,7 +193,11 @@ define([
                         self.day = value;
                     } else {
                         isValidated = false;
-                        self._showError(self.errorDay);
+                        if (self.emptyAttributeOnError) {
+                            self._contextObj.set(self.attributeName, null);
+                        } else {
+                            self._showError(self.errorDay);
+                        }
                     }
                     break;
                 case "month":
@@ -177,7 +206,11 @@ define([
                         self.month = value;
                     } else {
                         isValidated = false;
-                        self._showError(self.errorMonth);
+                        if (self.emptyAttributeOnError) {
+                            self._contextObj.set(self.attributeName, null);
+                        } else {
+                            self._showError(self.errorMonth);
+                        }
                     }
                     break;
                 case "year":
@@ -185,7 +218,11 @@ define([
                         self.year = value;
                     } else {
                         isValidated = false;
-                        self._showError(self.errorYear);
+                        if (self.emptyAttributeOnError) {
+                            self._contextObj.set(self.attributeName, null);
+                        } else {
+                            self._showError(self.errorYear);
+                        }
                     }
                     break;
                 }
@@ -222,7 +259,9 @@ define([
                 this._contextObj.set(this.attributeName, date);
                 this._clearError();
             } else {
-                this._showError(this.errorDate);
+                if (!this.emptyAttributeOnError) {
+                    this._showError(this.errorDate);
+                }
             }
         },
         // check if all fields are set and starts validation if needed.
@@ -238,11 +277,10 @@ define([
                         allSet = false;
                     }
                 });
-                if (allSet) {
-                    self._validateDateValue();
-                } else {
+                if (!allSet) {
                     self._clearError(); // If fields are no longer all set remove error message
                 }
+                self._validateDateValue();
             });
         },
         // sets up form fields, according to input order array from modeler.
@@ -346,6 +384,7 @@ define([
                 }, selectNode
                     );
             });
+            dojoAttr.set(selectNode, "value", "");
             return selectNode;
         }
     });

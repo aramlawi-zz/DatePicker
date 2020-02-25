@@ -24,5 +24,14 @@ DD/MM/YYYY- MM/DD/YYYY- YYYY/MM/DD
 
 Custom error messages can be set.
 
+## emptyAttributeOnError
+
+If this option is set to true then inline validation of the date
+is disabled, and instead the returned date entity will be empty if
+a problem occurs.
+
+If emptyAttributeOnError isn't selected, when editing an existing
+date and if an invalid year is entered, the previous year could be retained in the date attribute returned.
+
 # Credits:
 Based on [Mendix boilerplate](https://github.com/mendix/AppStoreWidgetBoilerplate)
