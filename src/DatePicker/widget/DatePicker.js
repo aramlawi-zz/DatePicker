@@ -128,7 +128,7 @@ define([
 
                 // set dates, if not set return empty value instead of NaN
                 dojoQuery(classNameSearch).each(function (index, node) {
-                    var id = dojoAttr.get(node, "id");
+                    var id = dojoAttr.get(node, "data-mx-dateinput-id");
                     if (id === "day") {
                         dojoAttr.set(node, "value", dateFromDB.getDate() || "");
                     }
@@ -152,7 +152,7 @@ define([
 
                 // set dates, if not set return empty value instead of NaN
                 dojoQuery(classNameSearch).each(function (index, node) {
-                    var id = dojoAttr.get(node, "id"),
+                    var id = dojoAttr.get(node, "data-mx-dateinput-id"),
                         value = dojoAttr.get(node, "value");
                     if (id === "day" && value === null) {
                         dojoAttr.set(node, "value", dateFromDB.getDate() || "");
@@ -187,7 +187,7 @@ define([
             dojoQuery(classNameSearch).each(function (index, node) {
             //$2(classNameSearch).each(function () {
                 value = node.value.replace(/\s+/g, ""); // remove spaces
-                switch (dojoAttr.get(node, "id")) {
+                switch (dojoAttr.get(node, "data-mx-dateinput-id")) {
                 case "day":
                     if ((value > 0) && (value <= 31)) {
                         self.day = value;
@@ -358,7 +358,7 @@ define([
             inputNode = $("input", {
                 "class": "form-control mx-dateinput-input " + this.className,
                 value: "",
-                "id": dataArray[1],
+                "data-mx-dateinput-id": dataArray[1],
                 "placeholder": dataArray[0],
                 "style" : "width:125px; display:inline-block; margin-right: 10px;",
                 "data-dojo-attach-point" : "dataElement" + dataArray[0]
@@ -373,7 +373,7 @@ define([
             $ = dom.create;
             selectNode =  $("select", {
                 "class": "form-control " + this.className,
-                "id": dataArray[1],
+                "data-mx-dateinput-id": dataArray[1],
                 "style" : "width:125px; display:inline-block; margin-right: 10px;",
                 "data-dojo-attach-point" : "dataElement" + dataArray[0]
             });
