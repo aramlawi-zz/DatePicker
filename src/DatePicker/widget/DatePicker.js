@@ -174,7 +174,7 @@ define([
             } else {
                 this.maxYear = new Date().getFullYear();
             }
-            this.className = "dateInput-" + this.attributeName;
+            this.className = "dateInput-" + this.attributeName + '-' + this._uniqueID();
             this.labelName.innerHTML = this.attributeLabel;
             //create arrays
             this._initialiseDayArray();
@@ -386,6 +386,16 @@ define([
             });
             dojoAttr.set(selectNode, "value", "");
             return selectNode;
+        },
+        _uniqueID: function() {
+            function chr4(){
+                return Math.random().toString(16).slice(-4);
+            }
+            return chr4() + chr4() +
+                '-' + chr4() +
+                '-' + chr4() +
+                '-' + chr4() +
+                '-' + chr4() + chr4() + chr4();
         }
     });
 });
