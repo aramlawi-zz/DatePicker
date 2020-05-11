@@ -372,7 +372,7 @@ define([
             var $, selectNode, indexModifier = 1;
             $ = dom.create;
             selectNode =  $("select", {
-                "class": "form-control " + this.className,
+                "class": "form-control mx-dateinput-input " + this.className,
                 "data-mx-dateinput-id": dataArray[1],
                 "style" : "width:125px; display:inline-block; margin-right: 10px;",
                 "data-dojo-attach-point" : "dataElement" + dataArray[0]
