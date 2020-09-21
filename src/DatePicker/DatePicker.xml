@@ -80,6 +80,11 @@
                 <attributeType name="DateTime" />
             </attributeTypes>
         </property>
+        <property key="emptyAttributeOnError" type="boolean" defaultValue="false">
+            <caption>Empty the attribute on error?</caption>
+            <category>Input</category>
+            <description>If no is selected, the attribute isn't emptied if an error occurs. This is the original funcionality.</description>
+        </property>
         <!-- ERROR LABELS -->
         <property key="errorDay" type="string" >
             <caption>Day not valid</caption>

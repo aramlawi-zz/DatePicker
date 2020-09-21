@@ -63,6 +63,7 @@ define([
         monthNotation: null, // long, short
         orientation: null, // horizontal or vertical
         labelwidth: null, // int
+        emptyAttributeOnError: false,   // bool
 
         //Object & Nodes
         _contextObj: null,
@@ -110,7 +111,7 @@ define([
                     guid: this._contextObj.getGuid(),
                     attr: this.attributeName,
                     callback: dojoLang.hitch(this, function () {
-                        this._loadDate();
+                        this._loadDate2();
                     })
                 });
                 this._handles.push(attrHandle);
@@ -127,7 +128,7 @@ define([
 
                 // set dates, if not set return empty value instead of NaN
                 dojoQuery(classNameSearch).each(function (index, node) {
-                    var id = dojoAttr.get(node, "id");
+                    var id = dojoAttr.get(node, "data-mx-dateinput-id");
                     if (id === "day") {
                         dojoAttr.set(node, "value", dateFromDB.getDate() || "");
                     }
@@ -138,7 +139,31 @@ define([
                         dojoAttr.set(node, "value", dateFromDB.getFullYear() || "");
                     }
                 });
+            });
+        },
+        // check for changes to data, if we have values in the fields keep them.
+        _loadDate2: function () {
+            var self = this;
+            this._contextObj.fetch(this.attributeName, function (value) {
+                var dateFromDB,
+                    classNameSearch = "." +  self.className;
 
+                dateFromDB = new Date(value);
+
+                // set dates, if not set return empty value instead of NaN
+                dojoQuery(classNameSearch).each(function (index, node) {
+                    var id = dojoAttr.get(node, "data-mx-dateinput-id"),
+                        value = dojoAttr.get(node, "value");
+                    if (id === "day" && value === null) {
+                        dojoAttr.set(node, "value", dateFromDB.getDate() || "");
+                    }
+                    if (id === "month" && value === null) {
+                        dojoAttr.set(node, "value", dateFromDB.getMonth() + 1 || "");
+                    }
+                    if (id === "year" && value === null) {
+                        dojoAttr.set(node, "value", dateFromDB.getFullYear() || "");
+                    }
+                });
             });
         },
         // initialise all values setup in modeler, also create additional arrays used by widget.
@@ -149,7 +174,7 @@ define([
             } else {
                 this.maxYear = new Date().getFullYear();
             }
-            this.className = "dateInput-" + this.attributeName;
+            this.className = "dateInput-" + this.attributeName + '-' + this._uniqueID();
             this.labelName.innerHTML = this.attributeLabel;
             //create arrays
             this._initialiseDayArray();
@@ -162,13 +187,17 @@ define([
             dojoQuery(classNameSearch).each(function (index, node) {
             //$2(classNameSearch).each(function () {
                 value = node.value.replace(/\s+/g, ""); // remove spaces
-                switch (dojoAttr.get(node, "id")) {
+                switch (dojoAttr.get(node, "data-mx-dateinput-id")) {
                 case "day":
                     if ((value > 0) && (value <= 31)) {
                         self.day = value;
                     } else {
                         isValidated = false;
-                        self._showError(self.errorDay);
+                        if (self.emptyAttributeOnError) {
+                            self._contextObj.set(self.attributeName, null);
+                        } else {
+                            self._showError(self.errorDay);
+                        }
                     }
                     break;
                 case "month":
@@ -177,7 +206,11 @@ define([
                         self.month = value;
                     } else {
                         isValidated = false;
-                        self._showError(self.errorMonth);
+                        if (self.emptyAttributeOnError) {
+                            self._contextObj.set(self.attributeName, null);
+                        } else {
+                            self._showError(self.errorMonth);
+                        }
                     }
                     break;
                 case "year":
@@ -185,7 +218,11 @@ define([
                         self.year = value;
                     } else {
                         isValidated = false;
-                        self._showError(self.errorYear);
+                        if (self.emptyAttributeOnError) {
+                            self._contextObj.set(self.attributeName, null);
+                        } else {
+                            self._showError(self.errorYear);
+                        }
                     }
                     break;
                 }
@@ -222,7 +259,9 @@ define([
                 this._contextObj.set(this.attributeName, date);
                 this._clearError();
             } else {
-                this._showError(this.errorDate);
+                if (!this.emptyAttributeOnError) {
+                    this._showError(this.errorDate);
+                }
             }
         },
         // check if all fields are set and starts validation if needed.
@@ -238,11 +277,10 @@ define([
                         allSet = false;
                     }
                 });
-                if (allSet) {
-                    self._validateDateValue();
-                } else {
+                if (!allSet) {
                     self._clearError(); // If fields are no longer all set remove error message
                 }
+                self._validateDateValue();
             });
         },
         // sets up form fields, according to input order array from modeler.
@@ -320,7 +358,7 @@ define([
             inputNode = $("input", {
                 "class": "form-control mx-dateinput-input " + this.className,
                 value: "",
-                "id": dataArray[1],
+                "data-mx-dateinput-id": dataArray[1],
                 "placeholder": dataArray[0],
                 "style" : "width:125px; display:inline-block; margin-right: 10px;",
                 "data-dojo-attach-point" : "dataElement" + dataArray[0]
@@ -334,8 +372,8 @@ define([
             var $, selectNode, indexModifier = 1;
             $ = dom.create;
             selectNode =  $("select", {
-                "class": "form-control " + this.className,
-                "id": dataArray[1],
+                "class": "form-control mx-dateinput-input " + this.className,
+                "data-mx-dateinput-id": dataArray[1],
                 "style" : "width:125px; display:inline-block; margin-right: 10px;",
                 "data-dojo-attach-point" : "dataElement" + dataArray[0]
             });
@@ -346,7 +384,18 @@ define([
                 }, selectNode
                     );
             });
+            dojoAttr.set(selectNode, "value", "");
             return selectNode;
+        },
+        _uniqueID: function() {
+            function chr4(){
+                return Math.random().toString(16).slice(-4);
+            }
+            return chr4() + chr4() +
+                '-' + chr4() +
+                '-' + chr4() +
+                '-' + chr4() +
+                '-' + chr4() + chr4() + chr4();
         }
     });
 });
